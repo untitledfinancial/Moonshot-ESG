@@ -1,0 +1,36 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "./ESGCompliance.sol";
+
+contract ESGOracle {
+    ESGCompliance public esgCompliance;
+    AggregatorV3Interface internal carbonFootprintOracle;
+    AggregatorV3Interface internal socialImpactOracle;
+    AggregatorV3Interface internal governanceOracle;
+
+    constructor(
+        address _esgCompliance,
+        address _carbonFootprintOracle,
+        address _socialImpactOracle,
+        address _governanceOracle
+    ) {
+        esgCompliance = ESGCompliance(_esgCompliance);
+        carbonFootprintOracle = AggregatorV3Interface(_carbonFootprintOracle);
+        socialImpactOracle = AggregatorV3Interface(_socialImpactOracle);
+        governanceOracle = AggregatorV3Interface(_governanceOracle);
+    }
+
+    function updateESGData() external {
+        (, int256 carbonFootprint,,,) = carbonFootprintOracle.latestRoundData();
+        (, int256 socialImpact,,,) = socialImpactOracle.latestRoundData();
+        (, int256 governanceScore,,,) = governanceOracle.latestRoundData();
+        
+        esgCompliance.updateESGData(
+            uint256(carbonFootprint),
+            uint256(socialImpact),
+            uint256(governanceScore)
+        );
+    }
+}
