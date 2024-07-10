@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "./DOVPAXBRANCH.sol";
+
+contract ESGCompliance {
+    DOVPAXBRANCH public dovToken;
+    address public oracle;
+    
+    struct ESGData {
+        uint256 carbonFootprint;
+        uint256 socialImpact;
+        uint256 governanceScore;
+    }
+    
+    ESGData public currentESGData;
+    
+    event ESGDataUpdated(uint256 carbonFootprint, uint256 socialImpact, uint256 governanceScore);
+
+    modifier onlyOracle() {
+        require(msg.sender == oracle, "Not authorized");
+        _;
+    }
+
+    constructor(address _dovToken, address _oracle) {
+        dovToken = DOVPAXBRANCH(_dovToken);
+        oracle = _oracle;
+    }
+
+    function updateESGData(uint256 carbonFootprint, uint256 socialImpact, uint256 governanceScore) external onlyOracle {
+        currentESGData = ESGData(carbonFootprint, socialImpact, governanceScore);
+        emit ESGDataUpdated(carbonFootprint, socialImpact, governanceScore);
+    }
+
+    function getESGData() external view returns (ESGData memory) {
+        return currentESGData;
+    }
+}
